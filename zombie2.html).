@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<title>System Locked</title>
+<style>
+  body { margin: 0; background: #000; color: red; font-family: monospace; text-align: center; display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; user-select: none; overflow: hidden; }
+  h1 { font-size: 2.5em; animation: blink 1s infinite; margin-bottom: 10px; }
+  p { font-size: 1.2em; color: #fff; margin: 10px; }
+  .tg { color: #ffcc00; font-weight: bold; font-size: 1.5em; margin: 15px 0; }
+  #timer { font-size: 6em; font-weight: bold; color: #ff0000; margin-top: 10px; text-shadow: 0 0 20px red; }
+  @keyframes blink { 50% { opacity: 0; } }
+</style>
+</head>
+<body onclick="initApp()">
+  <h1>СИСТЕМА ЗАБЛОКИРОВАНА</h1>
+  <p>Все данные зашифрованы.</p>
+  <div class="tg">ОТКУП: @lev_petrov</div>
+  <div id="timer">30</div>
+  <p style="font-size: 0.8em; color: gray; position: absolute; bottom: 20px;">нажми на экран для полного экрана</p>
+
+  <script>
+    let tg = window.Telegram.WebApp;
+    let isInit = false;
+
+    function initApp() {
+        if (isInit) return;
+        isInit = true;
+        
+        // Разворачиваем на весь экран
+        tg.expand();
+        if (tg.requestFullscreen) {
+            tg.requestFullscreen();
+        }
+        
+        // Блокируем свайп вниз для закрытия
+        if (tg.disableVerticalSwipes) {
+            tg.disableVerticalSwipes();
+        }
+        
+        // Включаем предупреждение при нажатии на крестик
+        tg.enableClosingConfirmation();
+    }
+
+    // Запускаем сразу при загрузке на всякий случай
+    initApp();
+
+    let t = 30;
+    const timerEl = document.getElementById('timer');
+
+    setInterval(() => {
+        if (t > 0) {
+            t--;
+            timerEl.innerText = t;
+            if (navigator.vibrate) navigator.vibrate(300);
+        } else {
+            document.body.innerHTML = '<h1 style="color: lime; animation: none;">АХАХА ЭТО РОЗЫГРЫШ :)</h1><p>@lev_petrov — просто мем</p>';
+            tg.disableClosingConfirmation();
+            if (tg.disableVerticalSwipes) {
+                // Свайпы можно разрешить обратно, если нужно
+            }
+        }
+    }, 1000);
+  </script>
+</body>
+</html>
