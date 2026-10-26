@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>System Locked</title>
+<style>
+  body { margin: 0; background: #000; color: red; font-family: monospace; text-align: center; display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; user-select: none; }
+  h1 { font-size: 2.5em; animation: blink 1s infinite; margin-bottom: 10px; }
+  p { font-size: 1.2em; color: #fff; margin: 10px; }
+  .tg { color: #ffcc00; font-weight: bold; font-size: 1.5em; margin: 15px 0; }
+  input { padding: 15px; font-size: 1.2em; margin: 20px 0; border: 2px solid red; background: #111; color: #fff; text-align: center; width: 80%; max-width: 300px; outline: none; }
+  button { padding: 15px 40px; font-size: 1.2em; background: red; color: white; border: none; font-weight: bold; cursor: pointer; }
+  #status { color: #ff0000; margin-top: 20px; font-size: 1.1em; font-weight: bold; }
+  .success { color: #00ff00 !important; }
+  @keyframes blink { 50% { opacity: 0; } }
+</style>
+</head>
+<body>
+  <h1>СИСТЕМА ЗАБЛОКИРОВАНА</h1>
+  <p>Все данные зашифрованы.</p>
+  
+  <div class="tg">ОТКУП: @lev_petrov</div>
+  
+  <p>Введите пароль разблокировки:</p>
+  <input type="text" id="password" placeholder="Пароль...">
+  <br>
+  <button onclick="checkPassword()">РАЗБЛОКИРОВАТЬ</button>
+  <div id="status"></div>
+
+  <script>
+    history.pushState(null, null, location.href);
+    window.onpopstate = function () { history.go(1); };
+
+    function checkPassword() {
+      let pwd = document.getElementById('password').value;
+      let status = document.getElementById('status');
+      
+      if (pwd === "5680") {
+        status.innerText = "ДОСТУП РАЗРЕШЕН. РАЗБЛОКИРОВКА...";
+        status.className = "success";
+        document.body.innerHTML = '<h1 class="success" style="animation:none; color:lime;">РАЗБЛОКИРОВАНО</h1><p>Ты знал пароль.</p>';
+      } else {
+        status.innerText = "ДОСТУП ЗАПРЕЩЕН. ПОПЫТКА ВЗЛОМА ЗАФИКСИРОВАНА.";
+        status.className = "";
+      }
+    }
+  </script>
+</body>
+</html>
