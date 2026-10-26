@@ -1,0 +1,158 @@
+name: Build APK
+on: [push, workflow_dispatch]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+      - uses: android-actions/setup-android@v3
+      - name: Generate project
+        run: |
+          mkdir -p app/src/main/java/com/pluma/zombie
+          mkdir -p app/src/main/res/values
+          cat > settings.gradle <<'EOF'
+          pluginManagement { repositories { google(); mavenCentral(); gradlePluginPortal() } }
+          dependencyResolutionManagement {
+              repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+              repositories { google(); mavenCentral() }
+          }
+          rootProject.name = "PlumaZombie"
+          include ':app'
+          EOF
+          cat > build.gradle <<'EOF'
+          plugins { id 'com.android.application' version '8.1.0' apply false }
+          EOF
+          cat > gradle.properties <<'EOF'
+          android.useAndroidX=true
+          org.gradle.jvmargs=-Xmx2048m
+          EOF
+          cat > app/build.gradle <<'EOF'
+          plugins { id 'com.android.application' }
+          android {
+              namespace 'com.pluma.zombie'
+              compileSdk 34
+              defaultConfig {
+                  applicationId "com.pluma.zombie"
+                  minSdk 21
+                  targetSdk 34
+                  versionCode 1
+                  versionName "1.0"
+              }
+              buildTypes { release { minifyEnabled false; signingConfig signingConfigs.debug } }
+              compileOptions {
+                  sourceCompatibility JavaVersion.VERSION_1_8
+                  targetCompatibility JavaVersion.VERSION_1_8
+              }
+          }
+          EOF
+          cat > app/src/main/AndroidManifest.xml <<'EOF'
+          <?xml version="1.0" encoding="utf-8"?>
+          <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+              package="com.pluma.zombie">
+              <uses-permission android:name="android.permission.VIBRATE"/>
+              <uses-permission android:name="android.permission.WAKE_LOCK"/>
+              <application android:label="Pluma" android:allowBackup="false">
+                  <activity android:name=".ZombieActivity"
+                      android:exported="true"
+                      android:launchMode="singleInstance"
+                      android:excludeFromRecents="true"
+                      android:screenOrientation="portrait"
+                      android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen">
+                      <intent-filter>
+                          <action android:name="android.intent.action.MAIN"/>
+                          <category android:name="android.intent.category.LAUNCHER"/>
+                      </intent-filter>
+                  </activity>
+              </application>
+          </manifest>
+          EOF
+          cat > app/src/main/res/values/strings.xml <<'EOF'
+          <?xml version="1.0" encoding="utf-8"?>
+          <resources><string name="app_name">Pluma</string></resources>
+          EOF
+          cat > app/src/main/java/com/pluma/zombie/ZombieActivity.java <<'EOF'
+          package com.pluma.zombie;
+          import android.app.Activity;
+          import android.content.Context;
+          import android.graphics.Color;
+          import android.graphics.Typeface;
+          import android.media.AudioManager;
+          import android.media.ToneGenerator;
+          import android.os.Build;
+          import android.os.Bundle;
+          import android.os.CountDownTimer;
+          import android.os.VibrationEffect;
+          import android.os.Vibrator;
+          import android.view.Gravity;
+          import android.view.View;
+          import android.view.WindowManager;
+          import android.widget.LinearLayout;
+          import android.widget.TextView;
+          public class ZombieActivity extends Activity {
+              private TextView title, skull, ransom, handle, timerText, foot;
+              private CountDownTimer timer; private boolean done=false;
+              private ToneGenerator tone; private Vibrator vib;
+              private static final int SEC=60;
+              @Override protected void onCreate(Bundle b){
+                  super.onCreate(b);
+                  getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON|WindowManager.LayoutParams.FLAG_FULLSCREEN|WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED|WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON|WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD);
+                  hideBars();
+                  LinearLayout r=new LinearLayout(this);
+                  r.setOrientation(LinearLayout.VERTICAL); r.setBackgroundColor(Color.BLACK);
+                  r.setGravity(Gravity.CENTER); r.setPadding(40,40,40,40);
+                  skull=tv("\u2620 \uD83E\uDDDF \u2620",72,"#FF0000",true); r.addView(skull);
+                  title=tv("\u0422\u042B \u0417\u0410\u0420\u0410\u0416\u0401\u041D",42,"#00FF00",true); title.setLetterSpacing(0.15f); r.addView(title);
+                  ransom=tv("\u0432\u0441\u0435 \u0444\u0430\u0439\u043B\u044B \u0437\u0430\u0448\u0438\u0444\u0440\u043E\u0432\u0430\u043D\u044B\n\u0443\u0441\u0442\u0440\u043E\u0439\u0441\u0442\u0432\u043E \u0437\u0430\u0431\u043B\u043E\u043A\u0438\u0440\u043E\u0432\u0430\u043D\u043E",16,"#AA0000",false); ransom.setPadding(0,30,0,0); r.addView(ransom);
+                  handle=tv("\u041E\u0422\u041A\u0423\u041F \u2192  @lev_petrov",26,"#FFCC00",true); handle.setPadding(0,40,0,0); r.addView(handle);
+                  timerText=tv("",96,"#FF0000",true); timerText.setPadding(0,30,0,0); r.addView(timerText);
+                  foot=tv("\u043D\u0435 \u0432\u044B\u043A\u043B\u044E\u0447\u0430\u0439 \u0443\u0441\u0442\u0440\u043E\u0439\u0441\u0442\u0432\u043E",13,"#555555",false); foot.setPadding(0,40,0,0); r.addView(foot);
+                  setContentView(r);
+                  try{tone=new ToneGenerator(AudioManager.STREAM_ALARM,100);}catch(Exception e){}
+                  vib=(Vibrator)getSystemService(Context.VIBRATOR_SERVICE); startCountdown();
+              }
+              private TextView tv(String s,int size,String color,boolean bold){
+                  TextView t=new TextView(this); t.setText(s); t.setTextSize(size); t.setTextColor(Color.parseColor(color));
+                  t.setGravity(Gravity.CENTER); t.setTypeface(Typeface.MONOSPACE,bold?Typeface.BOLD:Typeface.NORMAL); return t;
+              }
+              private void startCountdown(){
+                  timer=new CountDownTimer(SEC*1000L,1000L){
+                      @Override public void onTick(long ms){
+                          timerText.setText(String.valueOf((int)(ms/1000)));
+                          if(tone!=null) try{tone.startTone(ToneGenerator.TONE_PROP_BEEP,120);}catch(Exception e){}
+                          if(vib!=null&&vib.hasVibrator()){
+                              if(Build.VERSION.SDK_INT>=26) vib.vibrate(VibrationEffect.createOneShot(80,VibrationEffect.DEFAULT_AMPLITUDE)); else vib.vibrate(80);
+                          }
+                      }
+                      @Override public void onFinish(){ reveal(); }
+                  }.start();
+              }
+              private void reveal(){
+                  done=true; timerText.setText(""); skull.setText("\uD83D\uDE08");
+                  title.setText("\u0410\u0425\u0410\u0425\u0425\u0410 \u042D\u0422\u041E \u0420\u041E\u0417\u042B\u0413\u0420\u042B\u0428"); title.setTextColor(Color.parseColor("#00FF00")); title.setTextSize(28);
+                  ransom.setText("\u043D\u0438\u0447\u0435\u0433\u043E \u043D\u0435 \u0437\u0430\u0448\u0438\u0444\u0440\u043E\u0432\u0430\u043D\u043E\n\u0442\u0435\u043B\u0435\u0444\u043E\u043D \u043D\u0435 \u0437\u0430\u0431\u043B\u043E\u043A\u0438\u0440\u043E\u0432\u0430\u043D\n@lev_petrov \u2014 \u043F\u0440\u043E\u0441\u0442\u043E \u043C\u0435\u043C");
+                  handle.setText("\u043A\u043D\u043E\u043F\u043A\u0430 \u041D\u0430\u0437\u0430\u0434 \u0442\u0435\u043F\u0435\u0440\u044C \u0440\u0430\u0431\u043E\u0442\u0430\u0435\u0442"); handle.setTextColor(Color.parseColor("#888888")); handle.setTextSize(14);
+                  foot.setText("Pluma prank");
+                  if(vib!=null&&vib.hasVibrator()){ long[] p={0,300,150,300,150,600};
+                      if(Build.VERSION.SDK_INT>=26) vib.vibrate(VibrationEffect.createWaveform(p,-1)); else vib.vibrate(p,-1); }
+                  getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+                  getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE);
+              }
+              private void hideBars(){
+                  getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY|View.SYSTEM_UI_FLAG_HIDE_NAVIGATION|View.SYSTEM_UI_FLAG_FULLSCREEN|View.SYSTEM_UI_FLAG_LAYOUT_STABLE|View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION|View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);
+              }
+              @Override public void onBackPressed(){ if(!done) return; super.onBackPressed(); }
+              @Override protected void onResume(){ super.onResume(); if(!done) hideBars(); }
+              @Override protected void onDestroy(){ if(timer!=null) timer.cancel(); if(tone!=null){tone.release(); tone=null;} super.onDestroy(); }
+          }
+          EOF
+      - name: Build Release APK
+        run: gradle assembleRelease --no-daemon
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: Pluma-APK
+          path: app/build/outputs/apk/release/*.apk
