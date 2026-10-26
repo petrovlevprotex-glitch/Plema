@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<title>System Locked</title>
+<style>
+  body { margin: 0; background: #000; color: #ff0000; font-family: monospace; text-align: center; display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; user-select: none; overflow: hidden; }
+  
+  /* Стили для картинки зомби */
+  .zombie-img { max-width: 80%; max-height: 40vh; object-fit: contain; margin-bottom: 15px; border-radius: 10px; filter: drop-shadow(0 0 15px red); }
+  
+  h1 { font-size: 2em; animation: blink 1s infinite; margin: 0 0 10px 0; }
+  p { font-size: 1.1em; color: #fff; margin: 5px; }
+  .tg { color: #ffcc00; font-weight: bold; font-size: 1.4em; margin: 10px 0; }
+  input { padding: 12px; font-size: 1.1em; margin: 10px 0; border: 2px solid red; background: #111; color: #fff; text-align: center; width: 80%; max-width: 300px; outline: none; }
+  button { padding: 12px 30px; font-size: 1.1em; background: red; color: white; border: none; font-weight: bold; }
+  #timer { font-size: 4em; font-weight: bold; color: #ff0000; margin: 5px 0; text-shadow: 0 0 20px red; }
+  #status { color: #ff0000; margin-top: 10px; font-size: 1em; font-weight: bold; }
+  .success { color: #00ff00 !important; }
+  @keyframes blink { 50% { opacity: 0.2; } }
+</style>
+</head>
+<body onclick="initApp()">
+  
+  <img src="zombie.jpg" class="zombie-img" alt="Zombie">
+  
+  <h1>СИСТЕМА ЗАБЛОКИРОВАНА</h1>
+  <p>Все данные зашифрованы.</p>
+  <div class="tg">ОТКУП: @lev_petrov</div>
+  
+  <div id="timer">30</div>
+  
+  <input type="text" id="password" placeholder="Ключ дешифровки...">
+  <br>
+  <button onclick="check()">РАЗБЛОКИРОВАТЬ</button>
+  <div id="status"></div>
+
+  <script>
+    let tg = window.Telegram.WebApp;
+    let isInit = false;
+
+    function initApp() {
+        if (isInit) return;
+        isInit = true;
+        if (tg) {
+            tg.expand();
+            if (tg.requestFullscreen) tg.requestFullscreen();
+            if (tg.disableVerticalSwipes) tg.disableVerticalSwipes();
+            if (tg.enableClosingConfirmation) tg.enableClosingConfirmation();
+        }
+    }
+    initApp();
+
+    // Таймер и вибрация
+    let t = 30;
+    const timerEl = document.getElementById('timer');
+
+    setInterval(() => {
+        if (t > 0) {
+            t--;
+            timerEl.innerText = t;
+            // Вибрация на Андроиде (на iOS работать не будет)
+            if (navigator.vibrate) navigator.vibrate(200); 
+        } else {
+            document.body.innerHTML = '<h1 class="success" style="animation: none;">АХАХА ЭТО РОЗЫГРЫШ :)</h1><p style="color:#fff;">@lev_petrov — просто мем</p>';
+            if (tg && tg.disableClosingConfirmation) tg.disableClosingConfirmation();
+        }
+    }, 1000);
+
+    function check() {
+        let pwd = document.getElementById('password').value;
+        let status = document.getElementById('status');
+
+        if (pwd === "5680") {
+            status.innerText = "ДОСТУП РАЗРЕШЕН. СИСТЕМА ВОССТАНОВЛЕНА.";
+            status.className = "success";
+            document.body.innerHTML = '<h1 class="success" style="animation: none;">РАЗБЛОКИРОВАНО</h1><p style="color:#fff;">Пароль верный.</p>';
+            if (tg && tg.disableClosingConfirmation) tg.disableClosingConfirmation();
+        } else {
+            status.innerText = "ДОСТУП ЗАПРЕЩЕН.";
+            status.className = "";
+        }
+    }
+  </script>
+</body>
+</html>
