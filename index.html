@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<style>
+  body { margin: 0; padding: 0; background: #000; color: red; font-family: monospace; text-align: center; overflow: hidden; height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; user-select: none; }
+  h1 { font-size: 3em; }
+  p { font-size: 1.2em; }
+  #timer { font-size: 6em; font-weight: bold; margin-top: 20px; color: darkred; }
+</style>
+</head>
+<body onclick="this.requestFullscreen()">
+  <h1>SYSTEM LOCKED</h1>
+  <p>все файлы зашифрованы<br>устройство заблокировано<br><br><span style="color: gold;">ОТКУП → @lev_petrov</span></p>
+  <div id="timer">60</div>
+  <script>
+    history.pushState(null, null, location.href);
+    window.onpopstate = function () { history.go(1); };
+    window.addEventListener('touchmove', function(e) { e.preventDefault(); }, { passive: false });
+
+    let t = 60;
+    setInterval(() => {
+        if (t > 0) {
+            t--;
+            document.getElementById('timer').innerText = t;
+            if (navigator.vibrate) navigator.vibrate(200);
+        } else {
+            document.body.innerHTML = '<h1 style="color: lime;">АХАХА ЭТО РОЗЫГРЫШ :)</h1><p>@lev_petrov — просто мем</p>';
+        }
+    }, 1000);
+  </script>
+</body>
+</html>
