@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<title>System Locked</title>
+<style>
+  body { margin: 0; background: #000; color: #ff0000; font-family: monospace; text-align: center; display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; user-select: none; overflow: hidden; animation: bg-shake 0.5s infinite; }
+  h1 { font-size: 2.5em; animation: blink 1s infinite; margin-bottom: 10px; }
+  p { font-size: 1.2em; color: #fff; margin: 10px; }
+  .tg { color: #ffcc00; font-weight: bold; font-size: 1.5em; margin: 15px 0; }
+  input { padding: 15px; font-size: 1.2em; margin: 20px 0; border: 2px solid red; background: #111; color: #fff; text-align: center; width: 80%; max-width: 300px; outline: none; }
+  button { padding: 15px 40px; font-size: 1.2em; background: red; color: white; border: none; font-weight: bold; cursor: pointer; }
+  #timer { font-size: 6em; font-weight: bold; color: #ff0000; margin-top: 10px; text-shadow: 0 0 20px red; }
+  #status { color: #ff0000; margin-top: 20px; font-size: 1.1em; font-weight: bold; }
+  .success { color: #00ff00 !important; text-shadow: 0 0 20px lime; }
+  @keyframes blink { 50% { opacity: 0.2; } }
+  @keyframes bg-shake { 0% { transform: translate(1px, 1px) rotate(0deg); } 10% { transform: translate(-1px, -2px) rotate(-1deg); } 20% { transform: translate(-3px, 0px) rotate(1deg); } 30% { transform: translate(3px, 2px) rotate(0deg); } 40% { transform: translate(1px, -1px) rotate(1deg); } 50% { transform: translate(-1px, 2px) rotate(-1deg); } 60% { transform: translate(-3px, 1px) rotate(0deg); } 70% { transform: translate(3px, 1px) rotate(-1deg); } 80% { transform: translate(-1px, -1px) rotate(1deg); } 90% { transform: translate(1px, 2px) rotate(0deg); } 100% { transform: translate(1px, -2px) rotate(-1deg); } }
+</style>
+</head>
+<body onclick="initApp()">
+  <h1>СИСТЕМА ЗАБЛОКИРОВАНА</h1>
+  <p>Все данные зашифрованы.</p>
+  <div class="tg">ОТКУП: @lev_petrov</div>
+  
+  <div id="timer">30</div>
+  
+  <input type="text" id="password" placeholder="Ключ дешифровки...">
+  <br>
+  <button onclick="check()">РАЗБЛОКИРОВАТЬ</button>
+  <div id="status"></div>
+
+  <script>
+    let tg = window.Telegram.WebApp;
+    let isInit = false;
+
+    function initApp() {
+        if (isInit) return;
+        isInit = true;
+        if (tg) {
+            tg.expand();
+            if (tg.requestFullscreen) tg.requestFullscreen();
+            if (tg.disableVerticalSwipes) tg.disableVerticalSwipes();
+            if (tg.enableClosingConfirmation) tg.enableClosingConfirmation();
+        }
+    }
+    initApp();
+
+    // Вибрация и таймер
+    let t = 30;
+    const timerEl = document.getElementById('timer');
+
+    setInterval(() => {
+        if (t > 0) {
+            t--;
+            timerEl.innerText = t;
+            if (navigator.vibrate) navigator.vibrate(300); // Вибрация
+        } else {
+            document.body.style.animation = "none"; // Останавливаем тряску
+            document.body.innerHTML = '<h1 class="success" style="animation: none;">АХАХА ЭТО РОЗЫГРЫШ :)</h1><p style="color:#fff;">@lev_petrov — просто мем</p>';
+            if (tg && tg.disableClosingConfirmation) tg.disableClosingConfirmation();
+        }
+    }, 1000);
+
+    function check() {
+        let pwd = document.getElementById('password').value;
+        let status = document.getElementById('status');
+
+        if (pwd === "5680") {
+            status.innerText = "ДОСТУП РАЗРЕШЕН. СИСТЕМА ВОССТАНОВЛЕНА.";
+            status.className = "success";
+            document.body.style.animation = "none"; // Останавливаем тряску
+            document.body.innerHTML = '<h1 class="success" style="animation: none;">РАЗБЛОКИРОВАНО</h1><p style="color:#fff;">Пароль верный.</p>';
+            if (tg && tg.disableClosingConfirmation) tg.disableClosingConfirmation();
+        } else {
+            status.innerText = "ДОСТУП ЗАПРЕЩЕН.";
+            status.className = "";
+        }
+    }
+  </script>
+</body>
+</html>
